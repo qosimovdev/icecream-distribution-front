@@ -11,7 +11,7 @@
       <!-- <StatCard title="Mahsulotlar" :value="warehouse.totalProducts">
         <template #icon>📦</template>
       </StatCard> -->
-      <StatCard title="Omborda" :value="warehouse.totalQuantity">
+      <StatCard title="Omborda qoldi" :value="warehouse.totalQuantity">
         <template #icon>📦</template>
       </StatCard>
       <StatCard
@@ -85,6 +85,11 @@ onMounted(async () => {
 </script>
 
 <style scoped>
+.dashboard {
+  margin-top: 40px;
+  width: 100%;
+}
+
 .stats {
   display: flex;
   gap: 12px;
