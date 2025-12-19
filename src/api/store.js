@@ -1,6 +1,6 @@
 import api from "./axios";
 
-export const getStore = () =>
+export const getStores = () =>
     api.get("/store")
 
 export const postStore = (data) =>

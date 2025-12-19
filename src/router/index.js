@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from "vue-router";
-// import StoreListView from "@/views/StoreListView.vue";
+import StoreList from "../pages/store/StoreList.vue";
 import CreateStore from "../pages/store/CreateStore.vue";
 // import StoreEditView from "@/views/StoreEditView.vue";
-// import StoreDetailView from "@/views/StoreDetailView.vue";
+import StoreDetail from "../pages/store/StoreDetails.vue";
 import StockAddView from "../pages/StockAddView.vue";
 import Dashboard from "../pages/Dashboard.vue";
 
@@ -11,8 +11,9 @@ const routes = [
     { path: "/stocks", component: StockAddView },
     // { path: "/stores", component: StoreListView },
     { path: "/stores/create", component: CreateStore },
+    { path: "/stores", component: StoreList },
     // { path: "/stores/edit/:id", component: StoreEditView },
-    // { path: "/store/:id", component: StoreDetailView } // distribution + hisobot
+    { path: "/store/:id", component: StoreDetail } // distribution + hisobot
 ]
 
 const router = createRouter({
