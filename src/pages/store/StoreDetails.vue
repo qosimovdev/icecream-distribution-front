@@ -50,7 +50,7 @@ onMounted(async () => {
 
 .details-card {
   background-color: #fff;
-  /* padding: 20px; */
+  padding: 20px;
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
