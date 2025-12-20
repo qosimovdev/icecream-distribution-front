@@ -3,8 +3,6 @@
     <h1>📊 Dashboard</h1>
 
     <p v-if="loading">Yuklanmoqda...</p>
-    <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
-    <p v-if="successMsg" class="success">{{ successMsg }}</p>
 
     <!-- Ombor summary -->
     <div class="stats">

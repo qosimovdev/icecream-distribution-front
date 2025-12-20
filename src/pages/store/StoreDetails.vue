@@ -1,10 +1,7 @@
 <template>
   <div class="store-details">
     <h2>Do‘kon tafsilotlari</h2>
-
     <p v-if="loading">Yuklanmoqda...</p>
-    <p v-if="errorMsg" class="error">{{ errorMsg }}</p>
-
     <div v-if="store" class="details-card">
       <h3>{{ store.name }}</h3>
       <p><b>Manzil:</b> {{ store.address }}</p>
@@ -19,7 +16,9 @@ import { ref, onMounted } from "vue";
 import { useRoute } from "vue-router";
 import { getStoreById } from "../../api/store";
 import { getErrorMessage } from "../../utils/errorHandler";
+import { useToast } from "vue-toastification";
 
+const toast = useToast();
 const route = useRoute();
 const storeId = route.params.id;
 
@@ -33,10 +32,10 @@ onMounted(async () => {
   successMsg.value = "";
   try {
     const res = await getStoreById(storeId);
-    store.value = res.data;
-    successMsg.value = "Store ma'lumotlari muvaffaqiyatli yuklandi";
+    store.value = res.data.data;
+    toast.success("Ma'lumot muvaffaqiyatli yuklandi");
   } catch (error) {
-    errorMsg.value = getErrorMessage(error);
+    toast.error(getErrorMessage(error));
   } finally {
     loading.value = false;
   }
@@ -46,18 +45,12 @@ onMounted(async () => {
 <style scoped>
 .store-details {
   max-width: 800px;
-  margin: 50px auto 20px; /* header balandligi uchun 80px margin-top */
-  padding: 0 20px;
+  margin: 50px auto 20px;
 }
-
-/* .error {
-  color: #e74c3c;
-  margin-bottom: 15px;
-} */
 
 .details-card {
   background-color: #fff;
-  padding: 20px;
+  /* padding: 20px; */
   border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s, box-shadow 0.2s;
@@ -69,7 +62,7 @@ onMounted(async () => {
 }
 
 .details-card h3 {
-  margin-bottom: 15px;
+  /* margin-bottom: 15px; */
   color: #4a90e2;
 }
 
@@ -78,10 +71,10 @@ onMounted(async () => {
   color: #333;
 }
 
-/* Mobil moslashuv */
 @media (max-width: 600px) {
   .details-card {
-    padding: 15px;
+    padding: 1px 10px 15px 15px;
+    /* padding: 10px; */
   }
 }
 </style>
