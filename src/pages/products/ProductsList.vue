@@ -10,16 +10,14 @@
       @product-created="handleProductCreated"
     />
 
-    <div v-if="loading">
+    <!-- <div v-if="loading">
       <div v-for="i in 4" :key="i" class="product-card skeleton-card">
         <div class="skeleton-line short"></div>
         <div class="skeleton-line"></div>
         <div class="skeleton-line"></div>
         <div class="skeleton-btn"></div>
       </div>
-    </div>
-
-    <p v-else-if="error" class="error">{{ error }}</p>
+    </div> -->
 
     <p v-else-if="products.length === 0" class="empty">
       Mahsulotlar mavjud emas
@@ -34,6 +32,9 @@
         <p>
           Narxi: <b>{{ formatPrice(p.price) }} so'm</b>
         </p>
+        <p>
+          Ombordagi miqdori: <b>{{ getStockQuantity(p._id) }}</b>
+        </p>
       </div>
       <div class="product-actions">
         <button class="delete-btn" @click="remove(p._id)">O'chirish</button>
@@ -45,6 +46,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { getProducts, deleteProduct } from "../../api/product";
+import { getWarehouseSummary } from "../../api/stock";
 import { getErrorMessage } from "../../utils/errorHandler";
 import { useToast } from "vue-toastification";
 import { useRouter } from "vue-router";
@@ -55,13 +57,16 @@ const router = useRouter();
 const toast = useToast();
 const products = ref([]);
 const loading = ref(true);
+const stocks = ref([]);
 
 const fetchProducts = async () => {
   loading.value = true;
-  //   error.value = "";
   try {
     const res = await getProducts();
     products.value = res.data.products;
+
+    const resStocks = await getWarehouseSummary();
+    stocks.value = resStocks.data.data || [];
   } catch (error) {
     toast.error(getErrorMessage(error));
   } finally {
@@ -74,6 +79,11 @@ onMounted(fetchProducts);
 const handleProductCreated = async () => {
   await fetchProducts();
   showCreateModal.value = false;
+};
+
+const getStockQuantity = (productId) => {
+  const stock = stocks.value?.find((s) => s.productId === productId);
+  return stock ? stock.totalQuantity : 0;
 };
 
 const remove = async (id) => {
@@ -92,40 +102,28 @@ const formatPrice = (price) => {
 };
 </script>
 <style>
-/* Skeleton card styling */
 .skeleton-card {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
-  width: 93%; /* qo‘shildi */
+  width: 90%;
 }
 
-/* Skeleton line (text) */
 .skeleton-line {
   height: 16px;
   border-radius: 4px;
   background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
   background-size: 400% 100%;
   animation: shimmer 1.4s ease infinite;
-  flex-shrink: 0; /* kerakli bo‘lganda qisqarmasligi uchun */
-  width: 90%; /* width endi ishlaydi */
+  flex-shrink: 0;
+  width: 90%;
 }
 
 .skeleton-line.short {
   width: 50%;
   margin: 10px 140px 0 0;
 }
-/* 
-.skeleton-btn {
-  width: 80px;
-  height: 30px;
-  border-radius: 6px;
-  background: linear-gradient(90deg, #eee 25%, #f5f5f5 37%, #eee 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s ease infinite;
-  flex-shrink: 0;
-} */
 @keyframes shimmer {
   0% {
     background-position: 100% 0;
@@ -134,23 +132,9 @@ const formatPrice = (price) => {
     background-position: -100% 0;
   }
 }
-.error {
-  color: red;
-  text-align: center;
-  margin: 20px 0;
-}
-
 .empty {
   color: #555;
   text-align: center;
   margin: 20px 0;
-}
-
-.product-card {
-  background: #fff;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 12px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 </style>

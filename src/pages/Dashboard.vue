@@ -18,10 +18,16 @@
       >
         <template #icon>📈</template>
       </StatCard>
-      <StatCard title="Bugungi savdo" :value="daily.totalSales + ' so\'m'">
+      <StatCard
+        title="Bugungi savdo"
+        :value="daily.totalSales.toLocaleString('en-US') + ' so\'m'"
+      >
         <template #icon>💵</template>
       </StatCard>
-      <StatCard title="Bugungi qarz" :value="daily.totalDebt + ' so\'m'">
+      <StatCard
+        title="Bugungi qarz"
+        :value="daily.totalDebt.toLocaleString('en-US') + ' so\'m'"
+      >
         <template #icon>🧾</template>
       </StatCard>
       <!-- <StatCard title="Jami summa" :value="warehouse.totalAmount + ' so\'m'">
@@ -41,8 +47,6 @@ import { useToast } from "vue-toastification";
 
 const toast = useToast();
 const loading = ref(true);
-const errorMsg = ref("");
-const successMsg = ref("");
 
 // const warehouse = ref({ totalProducts: 0, totalQuantity: 0, totalAmount: 0 });
 const warehouse = ref({ totalQuantity: 0 });
@@ -51,9 +55,6 @@ const daily = ref({ totalQuantity: 0, totalSales: 0, totalDebt: 0 });
 
 onMounted(async () => {
   loading.value = true;
-  errorMsg.value = "";
-  successMsg.value = "";
-
   try {
     // Ombor
     const wRes = await getWarehouseSummary();
@@ -72,7 +73,6 @@ onMounted(async () => {
     const today = new Date().toISOString().slice(0, 10);
     const dRes = await getDailyReport(today);
     daily.value = dRes.data.data;
-
     toast.success("Ma'lumot muvaffaqiyatli yuklandi");
   } catch (error) {
     toast.error(getErrorMessage(error));
