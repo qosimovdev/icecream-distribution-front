@@ -141,11 +141,13 @@ const submit = async () => {
   try {
     await postDistribute({
       storeId: selectedStore.value,
+      paidAmount: Number(paidAmount.value) || 0,
       products: selectedProducts.value.map((p) => ({
         productId: p.productId,
         quantity: p.quantity,
+        unitPrice: p.price,
+        totalAmount: p.quantity * p.price,
       })),
-      paidAmount: paidAmount.value || 0,
     });
 
     toast.success("Mahsulotlar muvaffaqiyatli yuborildi");
