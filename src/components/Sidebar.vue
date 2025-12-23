@@ -6,8 +6,8 @@
         <li><router-link to="/products">Mahsulotlar</router-link></li>
         <li><router-link to="/distribution">Tarqatish</router-link></li>
         <li><router-link to="/stock">Soni</router-link></li>
-        <li><router-link to="/debts">Qarzlar</router-link></li>
-        <li><router-link to="/reports">Hisobotlar</router-link></li>
+        <!-- <li><router-link to="/debts">Qarzlar</router-link></li> -->
+        <!-- <li><router-link to="/reports">Hisobotlar</router-link></li> -->
         <li><router-link to="/stores">Do'konlar</router-link></li>
       </ul>
     </nav>

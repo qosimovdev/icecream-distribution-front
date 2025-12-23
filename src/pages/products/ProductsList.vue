@@ -19,9 +19,7 @@
       </div>
     </div> -->
 
-    <p v-else-if="products.length === 0" class="empty">
-      Mahsulotlar mavjud emas
-    </p>
+    <p v-else-if="products.length === 0" class="empty">Yuklanmoqda...</p>
 
     <div v-for="p in products" :key="p._id" class="product-card">
       <div class="product-info">

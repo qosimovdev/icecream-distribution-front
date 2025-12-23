@@ -1,3 +1,5 @@
 import api from "./axios";
 
-export const getDailyReport = (date) => api.get(`/report/daily?date=${date}`);
+export const getDailyReport = (date) => {
+    return api.get(`/report/daily?date=${date}`);
+};

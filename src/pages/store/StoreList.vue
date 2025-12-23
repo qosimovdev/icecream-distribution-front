@@ -10,6 +10,7 @@
       @close="showCreateModal = false"
       @store-created="handleStoreCreated"
     />
+    <p v-else-if="stores.length === 0" class="empty">Yuklanmoqda...</p>
 
     <div v-for="s in stores" :key="s._id" class="store-card">
       <div class="store-info">

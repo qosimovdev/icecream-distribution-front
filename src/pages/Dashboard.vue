@@ -4,88 +4,155 @@
 
     <p v-if="loading">Yuklanmoqda...</p>
 
-    <!-- Ombor summary -->
-    <div class="stats">
-      <!-- <StatCard title="Mahsulotlar" :value="warehouse.totalProducts">
-        <template #icon>📦</template>
-      </StatCard> -->
+    <div class="stats" v-else>
       <StatCard title="Omborda qoldi" :value="warehouse.totalQuantity">
         <template #icon>📦</template>
       </StatCard>
-      <StatCard
-        title="Jami sotilgan dona"
-        :value="daily.totalQuantity + ' dona'"
-      >
+
+      <StatCard title="Bugun sotildi" :value="daily.totalQuantity + ' dona'">
         <template #icon>📈</template>
       </StatCard>
+
       <StatCard
         title="Bugungi savdo"
-        :value="daily.totalSales.toLocaleString('en-US') + ' so\'m'"
+        :value="daily.totalSales.toLocaleString() + ' so‘m'"
       >
         <template #icon>💵</template>
       </StatCard>
+
       <StatCard
         title="Bugungi qarz"
-        :value="daily.totalDebt.toLocaleString('en-US') + ' so\'m'"
+        :value="daily.totalDebt.toLocaleString() + ' so‘m'"
       >
         <template #icon>🧾</template>
       </StatCard>
-      <!-- <StatCard title="Jami summa" :value="warehouse.totalAmount + ' so\'m'">
-        <template #icon>💰</template>
-      </StatCard> -->
+    </div>
+
+    <div class="chart-container">
+      <canvas id="salesChart"></canvas>
+    </div>
+
+    <div class="progress-bar">
+      <div class="filled" :style="{ width: soldPercent + '%' }"></div>
+      <span>{{ soldPercent }}% sotildi</span>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import StatCard from "../components/StatCard.vue";
 import { getWarehouseSummary } from "../api/stock";
 import { getDailyReport } from "../api/report";
-import { getErrorMessage } from "../utils/errorHandler";
 import { useToast } from "vue-toastification";
+import Chart from "chart.js/auto";
 
 const toast = useToast();
 const loading = ref(true);
 
-// const warehouse = ref({ totalProducts: 0, totalQuantity: 0, totalAmount: 0 });
 const warehouse = ref({ totalQuantity: 0 });
+const daily = ref({
+  totalQuantity: 0,
+  totalSales: 0,
+  totalPaid: 0,
+  totalDebt: 0,
+});
 
-const daily = ref({ totalQuantity: 0, totalSales: 0, totalDebt: 0 });
+const soldPercent = ref(0);
+let chartInstance = null;
+let intervalId = null;
 
-onMounted(async () => {
+const fetchData = async () => {
   loading.value = true;
   try {
-    // Ombor
+    /* 📦 Warehouse */
     const wRes = await getWarehouseSummary();
     const wData = wRes.data.data;
-    // warehouse.value.totalProducts = wData.length;
+
     warehouse.value.totalQuantity = wData.reduce(
-      (sum, item) => sum + item.totalQuantity,
+      (sum, item) => sum + (item.totalQuantity || 0),
       0
     );
-    // warehouse.value.totalAmount = wData.reduce(
-    //   (sum, item) => sum + item.totalAmount,
-    //   0
-    // );
 
-    // Kunlik savdo
+    /* 📊 Daily report */
     const today = new Date().toISOString().slice(0, 10);
     const dRes = await getDailyReport(today);
-    daily.value = dRes.data.data;
-    toast.success("Ma'lumot muvaffaqiyatli yuklandi");
-  } catch (error) {
-    toast.error(getErrorMessage(error));
+
+    // const data = dRes.data.data;
+
+    daily.value = {
+      totalQuantity: dRes.data.data.totalQuantity || 0,
+      totalSales: dRes.data.data.totalSales || 0,
+      totalPaid: dRes.data.data.totalPaid || 0,
+      totalDebt: dRes.data.data.totalDebt || 0,
+    };
+
+    /* 📈 Percent */
+    soldPercent.value =
+      daily.value.totalQuantity + warehouse.value.totalQuantity > 0
+        ? Math.round(
+            (daily.value.totalQuantity /
+              (daily.value.totalQuantity + warehouse.value.totalQuantity)) *
+              100
+          )
+        : 0;
+
+    renderChart();
+  } catch (err) {
+    console.error(err);
+    toast.error("Maʼlumotni yuklashda xatolik");
   } finally {
     loading.value = false;
   }
+};
+
+const renderChart = () => {
+  const canvas = document.getElementById("salesChart");
+  if (!canvas) return;
+
+  const ctx = canvas.getContext("2d");
+
+  if (chartInstance) {
+    chartInstance.destroy();
+  }
+
+  chartInstance = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Sotilgan", "Qoldiq", "Qarz"],
+      datasets: [
+        {
+          label: "Bugungi holat",
+          data: [
+            daily.value.totalQuantity,
+            warehouse.value.totalQuantity,
+            daily.value.totalDebt,
+          ],
+          backgroundColor: ["#4caf50", "#2196f3", "#f44336"],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+    },
+  });
+};
+
+onMounted(() => {
+  fetchData();
+  intervalId = setInterval(fetchData, 120000); // 2 daqiqa
+});
+
+onBeforeUnmount(() => {
+  if (intervalId) clearInterval(intervalId);
+  if (chartInstance) chartInstance.destroy();
 });
 </script>
 
 <style scoped>
 .dashboard {
   margin-top: 40px;
-  width: 100%;
 }
 
 .stats {
@@ -95,10 +162,34 @@ onMounted(async () => {
   flex-wrap: wrap;
 }
 
-.error {
-  color: red;
+.chart-container {
+  margin-top: 30px;
+  max-width: 600px;
+  height: 300px;
 }
-.success {
-  color: green;
+
+.progress-bar {
+  margin-top: 20px;
+  width: 100%;
+  height: 25px;
+  background-color: #eee;
+  border-radius: 5px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar .filled {
+  height: 100%;
+  background-color: #4caf50;
+  transition: width 0.4s ease;
+}
+
+.progress-bar span {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%);
+  font-weight: bold;
+  color: #000;
 }
 </style>
